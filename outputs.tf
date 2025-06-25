@@ -13,12 +13,3 @@ output "policy_name" {
   value       = vault_policy.tfe_workspace_aws_policy.name
 }
 
-output "workspace_id" {
-  description = "The ID of the TFE workspace."
-  value       = data.tfe_workspace.workspace.id
-}
-
-output "workspace_name" {
-  description = "The name of the TFE workspace."
-  value       = data.tfe_workspace.workspace.name
-}

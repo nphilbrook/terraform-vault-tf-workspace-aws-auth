@@ -1,8 +1,8 @@
-data "tfe_workspace" "workspace" {
+/* data "tfe_workspace" "workspace" {
   name         = var.workspace_name
   organization = var.tf_organization
 }
-
+ */
 # Primary AWS Account - Using the first account in the list
 locals {
   primary_aws_account_id     = var.aws_account_ids[0]
@@ -14,7 +14,7 @@ resource "tfe_variable" "vault_backed_aws_run_vault_role" {
   value        = vault_aws_secret_backend_role.vault_aws_role.name
   category     = "env"
   description  = "Vault role for AWS authentication"
-  workspace_id = data.tfe_workspace.workspace.id
+  workspace_id = var.workspace_id
 }
 
 # Required for assumed_role auth type
@@ -23,7 +23,7 @@ resource "tfe_variable" "vault_backed_aws_run_role_arn" {
   value        = "arn:aws:iam::${local.primary_aws_account_id}:role/${var.aws_iam_role_name}"
   category     = "env"
   description  = "ARN of the primary AWS role to assume"
-  workspace_id = data.tfe_workspace.workspace.id
+  workspace_id = var.workspace_id
 }
 
 # Additional AWS accounts with tags
@@ -34,7 +34,7 @@ resource "tfe_variable" "vault_backed_aws_additional_role_arns" {
   value        = "arn:aws:iam::${each.key}:role/${var.aws_iam_role_name}"
   category     = "env"
   description  = "ARN of the AWS role to assume for account ${each.key}"
-  workspace_id = data.tfe_workspace.workspace.id
+  workspace_id = var.workspace_id
 }
 
 # For tagged accounts, we need to set the auth type and vault role as well
@@ -45,7 +45,7 @@ resource "tfe_variable" "vault_backed_aws_auth_additional" {
   value        = "true"
   category     = "env"
   description  = "Enable Vault-backed AWS authentication for account ${each.key}"
-  workspace_id = data.tfe_workspace.workspace.id
+  workspace_id = var.workspace_id
 }
 
 resource "tfe_variable" "vault_backed_aws_run_vault_role_additional" {
@@ -55,6 +55,6 @@ resource "tfe_variable" "vault_backed_aws_run_vault_role_additional" {
   value        = vault_aws_secret_backend_role.vault_aws_role.name
   category     = "env"
   description  = "Vault role for AWS authentication for account ${each.key}"
-  workspace_id = data.tfe_workspace.workspace.id
+  workspace_id = var.workspace_id
 }
 

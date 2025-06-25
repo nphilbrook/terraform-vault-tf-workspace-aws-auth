@@ -21,6 +21,13 @@ variable "workspace_name" {
   description = "The name of the Terraform Cloud/Enterprise workspace that will use this authentication."
 }
 
+variable "workspace_id" {
+  type        = string
+  description = "The ID of the Terraform Cloud/Enterprise workspace that will use this authentication."
+}
+
+# NOTE: To be written
+
 variable "aws_account_ids" {
   type        = list(string)
   description = "List of AWS account IDs to use for dynamic credentials."
