@@ -9,6 +9,15 @@ locals {
   additional_aws_account_ids = length(var.aws_account_ids) > 1 ? slice(var.aws_account_ids, 1, length(var.aws_account_ids)) : []
 }
 
+resource "tfe_variable" "vault_admin_run_role" {
+  key      = "TFC_VAULT_RUN_ROLE"
+  value    = vault_jwt_auth_backend_role.vault_jwt_tf_workspace_role.role_name
+  category = "env"
+
+  description  = "Vault JWT role for this workspace"
+  workspace_id = var.workspace_id
+}
+
 resource "tfe_variable" "vault_backed_aws_run_vault_role" {
   key          = "TFC_VAULT_BACKED_AWS_RUN_VAULT_ROLE"
   value        = vault_aws_secret_backend_role.vault_aws_role.name
