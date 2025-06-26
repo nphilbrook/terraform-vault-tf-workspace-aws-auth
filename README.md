@@ -1,4 +1,4 @@
-# Terraform Vault TFE Workspace AWS Authentication
+# Terraform Vault TF Workspace AWS Authentication
 
 This Terraform module provides configuration for authenticating HCP Terraform workspaces with Vault's AWS secrets engine. It:
 
