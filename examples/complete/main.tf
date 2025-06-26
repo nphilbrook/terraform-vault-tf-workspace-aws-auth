@@ -17,13 +17,12 @@ module "tfe_workspace_aws_auth" {
   source = "../../"
 
   workspace_name    = "example-workspace"
+  workspace_id      = "ws-12345678-1234-1234-1234-123456789012"
   aws_account_ids   = ["123456789012", "210987654321"]
-  aws_iam_role_name = "terraform-vault-role"
+  aws_iam_role_name = "tf-deployment-role"
   tf_organization   = "example-org"
-  
-  vault_namespace_path = "admin/example"
-  jwt_auth_path       = "jwt"
-  aws_engine_path     = "aws"
+
+  vault_namespace_path = "admin/live/example"
 }
 
 output "jwt_auth_role_name" {
@@ -45,32 +44,3 @@ output "workspace_id" {
 output "workspace_name" {
   value = module.tfe_workspace_aws_auth.workspace_name
 }
-
-# Example of how to use the variable set in a Terraform configuration
-# This would be in the workspace's configuration, not in this module
-/*
-variable "tfc_vault_backed_aws_dynamic_credentials" {
-  description = "Object containing Vault-backed AWS dynamic credentials configuration"
-  type = object({
-    default = object({
-      shared_credentials_file = string
-    })
-    aliases = map(object({
-      shared_credentials_file = string
-    }))
-  })
-}
-
-# Primary AWS account
-provider "aws" {
-  region                   = "us-east-1"
-  shared_credentials_files = [var.tfc_vault_backed_aws_dynamic_credentials.default.shared_credentials_file]
-}
-
-# Secondary AWS account (if provided)
-provider "aws" {
-  alias                    = "ACCT1"
-  region                   = "us-east-1"
-  shared_credentials_files = [var.tfc_vault_backed_aws_dynamic_credentials.aliases["ACCT1"].shared_credentials_file]
-}
-*/
