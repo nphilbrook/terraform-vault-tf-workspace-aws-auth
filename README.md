@@ -3,9 +3,25 @@
 This Terraform module provides configuration for authenticating HCP Terraform workspaces with Vault's AWS secrets engine. It:
 
 1. Creates a JWT auth role in Vault that is bound to a specific workspace
-2. Creates an AWS secrets engine role in Vault with access to one or more AWS accounts
-3. Creates a Vault policy granting the JWT auth role access to the AWS secrets engine role
-4. Adds all required variables directly to the specified workspace for Vault-backed AWS dynamic provider credentials
+1. Creates an AWS secrets engine role in Vault with access to one or more AWS accounts
+1. Creates a Vault policy granting the JWT auth role access to the AWS secrets engine role
+1. Adds all required variables directly to the specified workspace for Vault-backed AWS dynamic provider credentials
+
+Reference the [official documentation](https://developer.hashicorp.com/terraform/cloud-docs/workspaces/dynamic-provider-credentials/vault-backed/aws-configuration) on this capability.
+
+The following must already be created outside of this module:
+1. The HCP Terraform workspace itself
+1. The JWT auth engine/mount and the AWS secrets engine
+1. AWS IAM roles to assume in all accounts. Note that this module *assumes the roles will be named identically in all accounts*.
+1. A shared variable set, associated to the workspace, declaring all variables NOT unique to each workspace. These are defined in "INSERT LINK HERE":
+    * TFC_VAULT_PROVIDER_AUTH
+    * TFC_VAULT_ADDR
+    * TFC_DEFAULT_VAULT_ADDR
+    * TFC_VAULT_NAMESPACE
+    * TFC_DEFAULT_VAULT_NAMESPACE
+    * TFC_VAULT_BACKED_AWS_AUTH
+    * TFC_VAULT_BACKED_AWS_AUTH_TYPE
+    * TFC_DEFAULT_VAULT_BACKED_AWS_AUTH_TYPE
 
 ## Usage
 
@@ -26,6 +42,47 @@ module "tfe_workspace_aws_auth" {
 }
 ```
 
+## Usage Examples
+
+Once the workspace is configured with this module, the code running in the workspace might need to change to utilize the dynamic credentials.
+
+### Single AWS accounts
+
+For workspaces utilising only a single AWS account, the AWS provider config is relatively simple, you simply omit any 
+credentials or assume_role blocks from teh providre configuration 
+
+## Multiple AWS accounts
+
+For multiple AWS account setups, you must declare one additional variable that is automatically defined
+(values filled in) by HCP Terraform. This variable is then referenced in your AWS provider aliases for additional accounts:
+
+```hcl
+# This variable is defined by HCP Terraform automatically
+variable "tfc_vault_backed_aws_dynamic_credentials" {
+  description = "Object containing Vault-backed AWS dynamic credentials configuration"
+  type = object({
+    default = object({
+      shared_credentials_file = string
+    })
+    aliases = map(object({
+      shared_credentials_file = string
+    }))
+  })
+}
+
+# Primary AWS account
+provider "aws" {
+  region                   = "us-east-1"
+  shared_credentials_files = [var.tfc_vault_backed_aws_dynamic_credentials.default.shared_credentials_file]
+}
+
+# Additional AWS accounts (if provided)
+provider "aws" {
+  alias                    = "account2" # For the second account in the list
+  region                   = "us-east-1"
+  shared_credentials_files = [var.tfc_vault_backed_aws_dynamic_credentials.aliases["210987654321"].shared_credentials_file]
+}
+```
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
@@ -40,8 +97,8 @@ module "tfe_workspace_aws_auth" {
 
 | Name | Version |
 |------|---------|
-| <a name="provider_tfe"></a> [tfe](#provider\_tfe) | 0.67.0 |
-| <a name="provider_vault"></a> [vault](#provider\_vault) | 5.0.0 |
+| <a name="provider_tfe"></a> [tfe](#provider\_tfe) | >=0.51.0 |
+| <a name="provider_vault"></a> [vault](#provider\_vault) | >=4.8.0 |
 
 ## Modules
 
@@ -51,6 +108,7 @@ No modules.
 
 | Name | Type |
 |------|------|
+| [tfe_variable.vault_admin_run_role](https://registry.terraform.io/providers/hashicorp/tfe/latest/docs/resources/variable) | resource |
 | [tfe_variable.vault_backed_aws_additional_role_arns](https://registry.terraform.io/providers/hashicorp/tfe/latest/docs/resources/variable) | resource |
 | [tfe_variable.vault_backed_aws_auth_additional](https://registry.terraform.io/providers/hashicorp/tfe/latest/docs/resources/variable) | resource |
 | [tfe_variable.vault_backed_aws_run_role_arn](https://registry.terraform.io/providers/hashicorp/tfe/latest/docs/resources/variable) | resource |
