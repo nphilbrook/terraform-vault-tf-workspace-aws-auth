@@ -51,7 +51,7 @@ Once the workspace is configured with this module, the code running in the works
 For workspaces utilising only a single AWS account, the AWS provider config is relatively simple, you simply omit any 
 credentials or assume_role blocks from teh providre configuration 
 
-## Multiple AWS accounts
+### Multiple AWS accounts
 
 For multiple AWS account setups, you must declare one additional variable that is automatically defined
 (values filled in) by HCP Terraform. This variable is then referenced in your AWS provider aliases for additional accounts:
